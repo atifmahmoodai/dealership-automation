@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/auto_test
+      SMOKE_DATABASE_URL: postgres://postgres:postgres@localhost:5432/auto_smoke
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Unit and API integration tests
+        run: npm test
+      - name: Build
+        run: npm run build
+      - name: Install Chromium for the smoke test
+        run: npx playwright-core install --with-deps chromium
+      - name: Full-stack browser smoke test
+        run: npm run smoke
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-screenshots
+          path: web/test-results/screenshots
+          if-no-files-found: ignore
+      - name: Dependency audit (production packages)
+        run: npm audit --omit=dev --audit-level=high
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -t auto:ci .
+      - name: Start database and app, check they come up healthy
+        run: |
+          docker network create ci
+          docker run -d --name db --network ci -e POSTGRES_PASSWORD=ci -e POSTGRES_DB=auto postgres:16-alpine
+          for i in $(seq 1 30); do docker exec db pg_isready -U postgres && break; sleep 1; done
+          docker run -d --name app --network ci -p 8080:8080 \
+            -e DATABASE_URL=postgres://postgres:ci@db:5432/auto -e COOKIE_SECURE=false auto:ci
+          for i in $(seq 1 40); do curl -fs http://localhost:8080/readyz && break; sleep 1; done
+          curl -fs http://localhost:8080/readyz
+          curl -fs http://localhost:8080/ | grep -q 'id="root"'
+          test "$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/api/vehicles)" = 401
+      - name: Logs on failure
+        if: failure()
+        run: docker logs app || true

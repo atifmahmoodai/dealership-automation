@@ -1,0 +1,34 @@
+# Single-server deployment: PostgreSQL + the app.
+#   cp .env.example .env   (then edit the passwords)
+#   docker compose up -d --build
+#   docker compose exec app node dist/cli/create-admin.js --email you@example.com --name "Your Name"
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: auto
+      POSTGRES_USER: auto
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U auto -d auto"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://auto:${POSTGRES_PASSWORD}@db:5432/auto
+    ports:
+      - "${APP_PORT:-8080}:8080"
+
+volumes:
+  pgdata:

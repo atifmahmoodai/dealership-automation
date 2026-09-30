@@ -1,0 +1,35 @@
+{
+  "name": "dealer-automation-server",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --env-file-if-exists=../.env src/server.ts",
+    "build": "node build.mjs",
+    "start": "node dist/server.js",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "migrate": "tsx --env-file-if-exists=../.env src/cli/migrate.ts",
+    "seed:demo": "tsx --env-file-if-exists=../.env src/cli/seed-demo.ts",
+    "create-admin": "tsx --env-file-if-exists=../.env src/cli/create-admin.ts",
+    "worker": "tsx --env-file-if-exists=../.env src/cli/worker.ts"
+  },
+  "dependencies": {
+    "@fastify/compress": "^9.2.0",
+    "@fastify/cookie": "^11.1.2",
+    "@fastify/helmet": "^13.1.1",
+    "@fastify/rate-limit": "^11.2.0",
+    "@fastify/static": "^10.1.5",
+    "fastify": "^5.12.5",
+    "pg": "^8.23.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.3",
+    "@types/pg": "^8.23.1",
+    "esbuild": "^0.28.2",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.2"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "name": "dealership-automation",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Publish used-car listings to several marketplaces from one stock list, keep them in sync, and follow up with buyers automatically.",
+  "workspaces": [
+    "server",
+    "web"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "npm run dev -w server & npm run dev -w web",
+    "build": "npm run build -w web && npm run build -w server",
+    "typecheck": "npm run typecheck -w server && npm run typecheck -w web",
+    "test": "vitest run --root shared && npm test -w server && npm test -w web",
+    "migrate": "npm run migrate -w server",
+    "seed:demo": "npm run seed:demo -w server",
+    "create-admin": "npm run create-admin -w server --",
+    "start": "npm start -w server",
+    "smoke": "npm run smoke -w web",
+    "worker": "npm run worker -w server"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.2"
+  }
+}
