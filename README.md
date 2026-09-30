@@ -2,6 +2,8 @@
 
 Keep one stock list and let the software do the repetitive work. **Every car goes to several marketplaces in each site's own format and stays in sync.** Price changes, "reserved" and "sold" go out automatically, and a sold car is taken down everywhere. **Buyer enquiries from every site land in one inbox**, with follow-ups that are polite by design.
 
+**Project guide (PDF):** [docs/PROJECT-GUIDE.pdf](docs/PROJECT-GUIDE.pdf) explains what this project is, the business problem it solves, the client's requirements, and how to build it from scratch, step by step.
+
 ![Dashboard](docs/screenshots/dashboard.png)
 
 ## What it does
